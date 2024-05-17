@@ -23,6 +23,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(Logger::new("%a %{User-Agent}i"))
             .service(user::controller::create_user)
+            .service(auth::controller::login)
     })
     .bind(("127.0.0.1", 3000))?
     .run()

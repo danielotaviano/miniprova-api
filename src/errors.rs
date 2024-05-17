@@ -1,5 +1,11 @@
 use actix_web::{error::ResponseError, HttpResponse};
 use derive_more::Display;
+use serde::Serialize;
+
+#[derive(Debug, Serialize)]
+struct ErrorResponse {
+    message: String,
+}
 
 #[derive(Debug, Display)]
 pub enum ServiceError {
@@ -14,9 +20,15 @@ impl ResponseError for ServiceError {
     fn error_response(&self) -> HttpResponse {
         match self {
             ServiceError::InternalServerError => {
-                HttpResponse::InternalServerError().json("Internal Server Error, Please try later")
+                HttpResponse::InternalServerError().json(&ErrorResponse {
+                    message: "Internal Server Error. Please try again later".into(),
+                })
             }
-            ServiceError::BadRequest(ref message) => HttpResponse::BadRequest().json(message),
+            ServiceError::BadRequest(ref message) => {
+                HttpResponse::BadRequest().json(&ErrorResponse {
+                    message: message.clone(),
+                })
+            }
         }
     }
 }

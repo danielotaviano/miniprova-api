@@ -36,11 +36,10 @@ impl From<RoleEnum> for String {
 }
 
 #[derive(Identifiable, Selectable, Queryable, Associations, Debug, Insertable)]
-#[belongs_to(User)]
-#[belongs_to(Role, foreign_key = "role_name")]
+#[diesel(belongs_to(User))]
+#[diesel(belongs_to(Role, foreign_key = role_name))]
 #[diesel(primary_key(user_id, role_name))]
-#[table_name = "users_roles"]
-
+#[diesel(table_name = users_roles)]
 pub struct UsersRole {
     pub user_id: i32,
     pub role_name: String,
