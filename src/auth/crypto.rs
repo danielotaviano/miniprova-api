@@ -39,10 +39,12 @@ pub fn generate_token(user_id: i32) -> Result<String, ServiceError> {
         exp: (chrono::Utc::now() + chrono::Duration::days(1)).timestamp() as usize,
     };
 
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
     let token = jsonwebtoken::encode(
         &jsonwebtoken::Header::default(),
         &claims,
-        &jsonwebtoken::EncodingKey::from_secret("secret".as_ref()),
+        &jsonwebtoken::EncodingKey::from_secret(secret.as_ref()),
     )
     .map_err(|_| ServiceError::InternalServerError)?;
 
