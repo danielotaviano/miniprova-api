@@ -7,6 +7,7 @@ pub struct User {
     pub id: i32,
     pub name: String,
     pub email: String,
+    pub password: String,
     pub created_at: chrono::NaiveDateTime,
 }
 
@@ -15,5 +16,6 @@ pub struct User {
 pub struct NewUser<'a> {
     pub name: &'a str,
     pub email: &'a str,
+    pub password: &'a str,
     pub created_at: chrono::NaiveDateTime,
 }

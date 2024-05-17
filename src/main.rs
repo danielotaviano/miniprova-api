@@ -2,8 +2,10 @@ use actix_web::{middleware::Logger, App, HttpServer};
 use db::DB_MANAGER;
 use dotenvy::dotenv;
 
+mod auth;
 mod db;
 mod errors;
+mod role;
 mod schema;
 mod user;
 

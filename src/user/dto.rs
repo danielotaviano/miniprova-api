@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
 
+use super::model::User;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateUserInputDto {
     pub name: String,
     pub email: String,
+    pub password: String,
 }
 
 impl CreateUserInputDto {
@@ -16,6 +19,27 @@ impl CreateUserInputDto {
             return Err("Email is required".to_string());
         }
 
+        if self.password.is_empty() {
+            return Err("Password is required".to_string());
+        }
+
         Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateUserOutputDto {
+    pub id: i32,
+    pub name: String,
+    pub email: String,
+}
+
+impl From<User> for CreateUserOutputDto {
+    fn from(user: User) -> Self {
+        CreateUserOutputDto {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+        }
     }
 }

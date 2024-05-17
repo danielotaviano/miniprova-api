@@ -12,6 +12,7 @@ diesel::table! {
         id -> Int4,
         name -> Text,
         email -> Text,
+        password -> Text,
         created_at -> Timestamp,
     }
 }
