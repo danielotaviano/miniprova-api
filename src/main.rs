@@ -9,6 +9,7 @@ mod class;
 mod db;
 mod errors;
 mod middleware;
+mod question;
 mod role;
 mod schema;
 mod user;
@@ -97,6 +98,25 @@ async fn main() -> std::io::Result<()> {
                     .wrap(middleware::RoleMiddleware(TEACHER))
                     .wrap(middleware::AuthMiddleware)
                     .route(web::get().to(class::controller::list_classes_by_teacher)),
+            )
+            .service(
+                web::scope("/question")
+                    .wrap(middleware::RoleMiddleware(TEACHER))
+                    .wrap(middleware::AuthMiddleware)
+                    .service(
+                        web::resource("")
+                            .post(question::controller::create_question)
+                            .get(question::controller::list_questions),
+                    )
+                    .service(
+                        web::resource("/{question_id}")
+                            .get(question::controller::get_question_by_id)
+                            .delete(question::controller::delete_question_by_id),
+                    )
+                    .service(
+                        web::resource("/{question_id}/answers")
+                            .get(question::controller::list_answers_by_question_id),
+                    ),
             )
     })
     .bind(("127.0.0.1", 3000))?

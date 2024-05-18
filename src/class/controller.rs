@@ -53,6 +53,11 @@ pub async fn update_class(
     class: web::Json<UpdateClassInputDto>,
     req: HttpRequest,
 ) -> impl Responder {
+    match class.validate() {
+        Err(e) => return HttpResponse::from_error(ServiceError::BadRequest(e)),
+        Ok(_) => (),
+    }
+
     let class_id = path.into_inner();
     let ext = req.extensions();
     let user = ext.get::<LoggedUser>().unwrap();
