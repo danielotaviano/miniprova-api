@@ -1,6 +1,9 @@
 use actix_web::{post, web, HttpResponse, Responder};
 
-use crate::{errors::ServiceError, user::dto::CreateUserInputDto, user::service};
+use crate::{
+    errors::ServiceError,
+    user::{dto::CreateUserInputDto, service},
+};
 
 #[post("/user")]
 pub async fn create_user(new_user: web::Json<CreateUserInputDto>) -> impl Responder {

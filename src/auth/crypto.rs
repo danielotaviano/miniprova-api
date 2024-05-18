@@ -50,3 +50,16 @@ pub fn generate_token(user_id: i32) -> Result<String, ServiceError> {
 
     Ok(token)
 }
+
+pub fn decode_token(token: &str) -> Result<i32, ServiceError> {
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    let token_data = jsonwebtoken::decode::<Claims>(
+        token,
+        &jsonwebtoken::DecodingKey::from_secret(secret.as_ref()),
+        &jsonwebtoken::Validation::default(),
+    )
+    .map_err(|_| ServiceError::Unauthorized)?;
+
+    Ok(token_data.claims.sub)
+}

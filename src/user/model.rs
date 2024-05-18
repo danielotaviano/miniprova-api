@@ -1,5 +1,9 @@
-use crate::schema::*;
-use diesel::{deserialize::Queryable, Insertable, Selectable};
+use crate::{role::model::Role, schema::*};
+use diesel::{
+    associations::{Associations, Identifiable},
+    deserialize::Queryable,
+    Insertable, Selectable,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Selectable, Queryable)]
@@ -18,4 +22,14 @@ pub struct NewUser<'a> {
     pub email: &'a str,
     pub password: &'a str,
     pub created_at: chrono::NaiveDateTime,
+}
+
+#[derive(Identifiable, Selectable, Queryable, Associations, Debug, Insertable)]
+#[diesel(belongs_to(Role, foreign_key = role_name))]
+#[diesel(belongs_to(User))]
+#[diesel(primary_key(user_id, role_name))]
+#[diesel(table_name = users_roles)]
+pub struct UsersRole {
+    pub role_name: String,
+    pub user_id: i32,
 }

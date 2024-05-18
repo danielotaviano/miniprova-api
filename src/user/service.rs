@@ -1,8 +1,8 @@
 use std::vec;
 
-use crate::{auth::crypto, errors::ServiceError, role::model::RoleEnum, user::repository};
+use crate::{auth::crypto, errors::ServiceError, role::enm::RoleEnum, user::repository};
 
-use super::dto::{CreateUserInputDto, CreateUserOutputDto};
+use super::dto::{CreateUserInputDto, CreateUserOutputDto, UserWithRolesOutputDto};
 
 pub fn create_user(user: CreateUserInputDto) -> Result<CreateUserOutputDto, ServiceError> {
     let existing_user = repository::get_user_by_email(&user.email)?;
@@ -19,5 +19,12 @@ pub fn create_user(user: CreateUserInputDto) -> Result<CreateUserOutputDto, Serv
         vec![RoleEnum::STUDENT],
     )?;
 
+    Ok(user.into())
+}
+
+pub fn get_user_with_roles_by_id(
+    user_id: i32,
+) -> Result<Option<UserWithRolesOutputDto>, ServiceError> {
+    let user = repository::get_user_with_roles_by_id(user_id)?;
     Ok(user.into())
 }

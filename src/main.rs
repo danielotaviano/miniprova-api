@@ -1,10 +1,12 @@
-use actix_web::{middleware::Logger, App, HttpServer};
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use db::DB_MANAGER;
 use dotenvy::dotenv;
 
 mod auth;
+mod avatar;
 mod db;
 mod errors;
+mod middleware;
 mod role;
 mod schema;
 mod user;
@@ -24,6 +26,12 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%a %{User-Agent}i"))
             .service(user::controller::create_user)
             .service(auth::controller::login)
+            .service(
+                web::scope("")
+                    .wrap(middleware::AuthMiddleware)
+                    .service(avatar::controller::update_user_avatar)
+                    .service(avatar::controller::delete_user_avatar),
+            )
     })
     .bind(("127.0.0.1", 3000))?
     .run()

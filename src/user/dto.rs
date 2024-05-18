@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::role::enm::RoleEnum;
+
 use super::model::User;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,4 +44,12 @@ impl From<User> for CreateUserOutputDto {
             email: user.email,
         }
     }
+}
+#[derive(Debug, Serialize, Deserialize)]
+
+pub struct UserWithRolesOutputDto {
+    pub id: i32,
+    pub name: String,
+    pub email: String,
+    pub roles: Vec<RoleEnum>,
 }

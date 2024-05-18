@@ -14,6 +14,9 @@ pub enum ServiceError {
 
     #[display(fmt = "BadRequest: {}", _0)]
     BadRequest(String),
+
+    #[display(fmt = "Unauthorized")]
+    Unauthorized,
 }
 
 impl ResponseError for ServiceError {
@@ -29,6 +32,9 @@ impl ResponseError for ServiceError {
                     message: message.clone(),
                 })
             }
+            ServiceError::Unauthorized => HttpResponse::Unauthorized().json(&ErrorResponse {
+                message: "Unauthorized".into(),
+            }),
         }
     }
 }
