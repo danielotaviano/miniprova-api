@@ -94,3 +94,29 @@ pub fn get_user_with_roles_by_id(
         roles: roles.into_iter().map(|role| role.into()).collect(),
     }))
 }
+
+pub fn set_user_roles(user_id: i32, roles: Vec<RoleEnum>) -> Result<(), ServiceError> {
+    let mut conn = DB_MANAGER.lock().unwrap().get_database();
+
+    let result: Result<(), Box<dyn Error>> = conn.transaction(|tx| {
+        diesel::delete(users_roles::table.filter(users_roles::user_id.eq(user_id))).execute(tx)?;
+
+        diesel::insert_into(users_roles::table)
+            .values(
+                roles
+                    .into_iter()
+                    .map(|role| UsersRole {
+                        user_id,
+                        role_name: role.into(),
+                    })
+                    .collect::<Vec<UsersRole>>(),
+            )
+            .execute(tx)?;
+
+        Ok(())
+    });
+
+    result.map_err(|_| ServiceError::InternalServerError)?;
+
+    Ok(())
+}

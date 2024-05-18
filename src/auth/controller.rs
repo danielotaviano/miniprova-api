@@ -2,7 +2,6 @@ use actix_web::{post, web, HttpResponse, Responder};
 
 use crate::auth::{dto::LoginUserInputDto, service};
 
-#[post("/login")]
 pub async fn login(new_user: web::Json<LoginUserInputDto>) -> impl Responder {
     if let Err(e) = new_user.validate() {
         return HttpResponse::from_error(e);

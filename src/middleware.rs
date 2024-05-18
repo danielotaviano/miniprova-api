@@ -10,6 +10,7 @@ use futures_util::future::LocalBoxFuture;
 use crate::{
     auth::{self, models::LoggedUser},
     errors::ServiceError,
+    role::enm::RoleEnum,
     user,
 };
 
@@ -106,6 +107,67 @@ where
         }
 
         let fut = self.service.call(req);
+
+        Box::pin(async move {
+            let res = fut.await?;
+            Ok(res)
+        })
+    }
+}
+
+pub struct RoleMiddleware(pub RoleEnum);
+
+impl<S> Transform<S, ServiceRequest> for RoleMiddleware
+where
+    S: Service<ServiceRequest, Response = ServiceResponse, Error = Error>,
+    S::Future: 'static,
+{
+    type Response = ServiceResponse;
+    type Error = Error;
+    type InitError = ();
+    type Transform = RoleAuthentication<S>;
+    type Future = Ready<Result<Self::Transform, Self::InitError>>;
+
+    fn new_transform(&self, service: S) -> Self::Future {
+        ready(Ok(RoleAuthentication {
+            service,
+            role: self.0,
+        }))
+    }
+}
+
+pub struct RoleAuthentication<S> {
+    service: S,
+    role: RoleEnum,
+}
+
+impl<S> Service<ServiceRequest> for RoleAuthentication<S>
+where
+    S: Service<ServiceRequest, Response = ServiceResponse, Error = Error>,
+    S::Future: 'static,
+{
+    type Response = ServiceResponse;
+    type Error = Error;
+    type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
+
+    forward_ready!(service);
+
+    fn call(&self, req: ServiceRequest) -> Self::Future {
+        let has_role;
+        {
+            let ext = req.extensions();
+            let logged_user = ext.get::<LoggedUser>().unwrap();
+
+            has_role = logged_user.roles.iter().any(|role| role == &self.role);
+        }
+
+        let fut: <S as Service<ServiceRequest>>::Future = match has_role {
+            true => self.service.call(req),
+            false => {
+                let res = req.error_response(ServiceError::Forbidden);
+                return Box::pin(async { Ok(res) });
+            }
+        };
 
         Box::pin(async move {
             let res = fut.await?;

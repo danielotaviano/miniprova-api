@@ -6,6 +6,7 @@ pub enum RoleEnum {
     STUDENT,
     TEACHER,
     MONITOR,
+    INVALID,
 }
 
 impl From<RoleEnum> for String {
@@ -15,6 +16,19 @@ impl From<RoleEnum> for String {
             RoleEnum::STUDENT => "STUDENT".to_string(),
             RoleEnum::TEACHER => "TEACHER".to_string(),
             RoleEnum::MONITOR => "MONITOR".to_string(),
+            RoleEnum::INVALID => "INVALID".to_string(),
+        }
+    }
+}
+
+impl Into<RoleEnum> for &String {
+    fn into(self) -> RoleEnum {
+        match self.as_str() {
+            "ADMIN" => RoleEnum::ADMIN,
+            "STUDENT" => RoleEnum::STUDENT,
+            "TEACHER" => RoleEnum::TEACHER,
+            "MONITOR" => RoleEnum::MONITOR,
+            _ => return RoleEnum::INVALID,
         }
     }
 }

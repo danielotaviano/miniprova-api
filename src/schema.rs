@@ -38,4 +38,9 @@ diesel::joinable!(avatars -> users (user_id));
 diesel::joinable!(users_roles -> roles (role_name));
 diesel::joinable!(users_roles -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(avatars, roles, users, users_roles,);
+diesel::allow_tables_to_appear_in_same_query!(
+    avatars,
+    roles,
+    users,
+    users_roles,
+);

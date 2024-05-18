@@ -17,6 +17,9 @@ pub enum ServiceError {
 
     #[display(fmt = "Unauthorized")]
     Unauthorized,
+
+    #[display(fmt = "Forbidden")]
+    Forbidden
 }
 
 impl ResponseError for ServiceError {
@@ -34,6 +37,9 @@ impl ResponseError for ServiceError {
             }
             ServiceError::Unauthorized => HttpResponse::Unauthorized().json(&ErrorResponse {
                 message: "Unauthorized".into(),
+            }),
+            ServiceError::Forbidden => HttpResponse::Forbidden().json(&ErrorResponse {
+                message: "Forbidden".into(),
             }),
         }
     }

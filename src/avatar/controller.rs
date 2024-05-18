@@ -1,4 +1,4 @@
-use actix_web::{delete, patch, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{delete, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 
 use crate::{
     auth::models::LoggedUser,
@@ -6,7 +6,6 @@ use crate::{
     errors::ServiceError,
 };
 
-#[patch("/avatar")]
 pub async fn update_user_avatar(
     req: HttpRequest,
     new_avatar: web::Json<CreateAvatarInputDto>,
@@ -29,7 +28,6 @@ pub async fn update_user_avatar(
     HttpResponse::Ok().json(avatar).into()
 }
 
-#[delete("/avatar")]
 pub async fn delete_user_avatar(req: HttpRequest) -> impl Responder {
     let ext = req.extensions();
     let user = match ext.get::<LoggedUser>() {
