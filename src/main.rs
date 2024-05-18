@@ -5,6 +5,7 @@ use role::enm::RoleEnum::*;
 
 mod auth;
 mod avatar;
+mod class;
 mod db;
 mod errors;
 mod middleware;
@@ -45,6 +46,58 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
             .service(web::resource("/login").post(auth::controller::login))
+            .service(
+                web::resource("/class")
+                    .wrap(middleware::RoleMiddleware(TEACHER))
+                    .wrap(middleware::AuthMiddleware)
+                    .post(class::controller::create_class),
+            )
+            .service(
+                web::resource("/class/student/enrolled")
+                    .wrap(middleware::RoleMiddleware(STUDENT))
+                    .wrap(middleware::AuthMiddleware)
+                    .route(web::get().to(class::controller::list_classes_that_student_is_enrolled)),
+            )
+            .service(
+                web::resource("/class/student/unenrolled")
+                    .wrap(middleware::RoleMiddleware(STUDENT))
+                    .wrap(middleware::AuthMiddleware)
+                    .route(
+                        web::get().to(class::controller::list_classes_that_student_is_not_enrolled),
+                    ),
+            )
+            .service(
+                web::resource("/class/{class_id}")
+                    .route(
+                        web::get()
+                            .to(class::controller::get_class_by_id)
+                            .wrap(middleware::AuthMiddleware),
+                    )
+                    .route(
+                        web::patch()
+                            .to(class::controller::update_class)
+                            .wrap(middleware::RoleMiddleware(TEACHER))
+                            .wrap(middleware::AuthMiddleware),
+                    )
+                    .route(
+                        web::delete()
+                            .to(class::controller::delete_class)
+                            .wrap(middleware::RoleMiddleware(TEACHER))
+                            .wrap(middleware::AuthMiddleware),
+                    ),
+            )
+            .service(
+                web::resource("/class/{class_id}/enroll")
+                    .wrap(middleware::RoleMiddleware(STUDENT))
+                    .wrap(middleware::AuthMiddleware)
+                    .route(web::post().to(class::controller::enroll_student)),
+            )
+            .service(
+                web::resource("/class/teacher/list")
+                    .wrap(middleware::RoleMiddleware(TEACHER))
+                    .wrap(middleware::AuthMiddleware)
+                    .route(web::get().to(class::controller::list_classes_by_teacher)),
+            )
     })
     .bind(("127.0.0.1", 3000))?
     .run()
