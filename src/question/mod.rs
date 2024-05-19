@@ -1,5 +1,5 @@
 pub mod controller;
-mod dto;
-mod models;
+pub mod dto;
+pub mod models;
 mod repository;
-mod service;
+pub mod service;

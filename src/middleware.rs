@@ -115,7 +115,7 @@ where
     }
 }
 
-pub struct RoleMiddleware(pub RoleEnum);
+pub struct RoleMiddleware(pub Vec<RoleEnum>);
 
 impl<S> Transform<S, ServiceRequest> for RoleMiddleware
 where
@@ -131,14 +131,14 @@ where
     fn new_transform(&self, service: S) -> Self::Future {
         ready(Ok(RoleAuthentication {
             service,
-            role: self.0,
+            role: self.0.clone(),
         }))
     }
 }
 
 pub struct RoleAuthentication<S> {
     service: S,
-    role: RoleEnum,
+    role: Vec<RoleEnum>,
 }
 
 impl<S> Service<ServiceRequest> for RoleAuthentication<S>
@@ -158,7 +158,11 @@ where
             let ext = req.extensions();
             let logged_user = ext.get::<LoggedUser>().unwrap();
 
-            has_role = logged_user.roles.iter().any(|role| role == &self.role);
+            has_role = logged_user
+                .roles
+                .iter()
+                .any(|role| self.role.contains(role))
+                || self.role.contains(&RoleEnum::ADMIN);
         }
 
         let fut: <S as Service<ServiceRequest>>::Future = match has_role {

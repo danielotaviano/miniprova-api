@@ -7,7 +7,7 @@ struct ErrorResponse {
     message: String,
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone)]
 pub enum ServiceError {
     #[display(fmt = "Internal Server Error")]
     InternalServerError,

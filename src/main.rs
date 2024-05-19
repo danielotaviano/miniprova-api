@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
                     .service(web::resource("").post(user::controller::create_user))
                     .service(
                         web::resource("/{user_id}/roles")
-                            .wrap(middleware::RoleMiddleware(ADMIN))
+                            .wrap(middleware::RoleMiddleware(vec![ADMIN]))
                             .wrap(middleware::AuthMiddleware)
                             .patch(user::controller::set_user_roles),
                     ),
@@ -49,66 +49,66 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::resource("/login").post(auth::controller::login))
             .service(
-                web::resource("/class")
-                    .wrap(middleware::RoleMiddleware(TEACHER))
+                web::scope("/class")
                     .wrap(middleware::AuthMiddleware)
-                    .post(class::controller::create_class),
-            )
-            .service(
-                web::resource("/class/student/enrolled")
-                    .wrap(middleware::RoleMiddleware(STUDENT))
-                    .wrap(middleware::AuthMiddleware)
-                    .route(web::get().to(class::controller::list_classes_that_student_is_enrolled)),
-            )
-            .service(
-                web::resource("/class/student/unenrolled")
-                    .wrap(middleware::RoleMiddleware(STUDENT))
-                    .wrap(middleware::AuthMiddleware)
-                    .route(
-                        web::get().to(class::controller::list_classes_that_student_is_not_enrolled),
-                    ),
-            )
-            .service(
-                web::resource("/class/{class_id}")
-                    .route(
-                        web::get()
-                            .to(class::controller::get_class_by_id)
-                            .wrap(middleware::AuthMiddleware),
+                    .service(
+                        web::resource("")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .post(class::controller::create_class),
                     )
-                    .route(
-                        web::patch()
-                            .to(class::controller::update_class)
-                            .wrap(middleware::RoleMiddleware(TEACHER))
-                            .wrap(middleware::AuthMiddleware),
+                    .service(
+                        web::resource("/student/enrolled")
+                            .wrap(middleware::RoleMiddleware(vec![STUDENT]))
+                            .route(
+                                web::get()
+                                    .to(class::controller::list_classes_that_student_is_enrolled),
+                            ),
                     )
-                    .route(
-                        web::delete()
-                            .to(class::controller::delete_class)
-                            .wrap(middleware::RoleMiddleware(TEACHER))
-                            .wrap(middleware::AuthMiddleware),
+                    .service(
+                        web::resource("/student/unenrolled")
+                            .wrap(middleware::RoleMiddleware(vec![STUDENT]))
+                            .route(
+                                web::get().to(
+                                    class::controller::list_classes_that_student_is_not_enrolled,
+                                ),
+                            ),
+                    )
+                    .service(
+                        web::resource("/{class_id}")
+                            .route(
+                                web::get()
+                                    .to(class::controller::get_class_by_id)
+                                    .wrap(middleware::AuthMiddleware),
+                            )
+                            .route(
+                                web::patch()
+                                    .to(class::controller::update_class)
+                                    .wrap(middleware::RoleMiddleware(vec![TEACHER])),
+                            )
+                            .route(
+                                web::delete()
+                                    .to(class::controller::delete_class)
+                                    .wrap(middleware::RoleMiddleware(vec![TEACHER])),
+                            ),
+                    )
+                    .service(
+                        web::resource("/{class_id}/exams")
+                            .route(web::get().to(exam::controller::list_exams_by_class_id)),
+                    )
+                    .service(
+                        web::resource("/{class_id}/enroll")
+                            .wrap(middleware::RoleMiddleware(vec![STUDENT]))
+                            .route(web::post().to(class::controller::enroll_student)),
+                    )
+                    .service(
+                        web::resource("/teacher/list")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .route(web::get().to(class::controller::list_classes_by_teacher)),
                     ),
-            )
-            .service(
-                web::resource("/class/{class_id}/exams")
-                    .wrap(middleware::RoleMiddleware(TEACHER))
-                    .wrap(middleware::AuthMiddleware)
-                    .route(web::get().to(exam::controller::list_exams_by_class_id)),
-            )
-            .service(
-                web::resource("/class/{class_id}/enroll")
-                    .wrap(middleware::RoleMiddleware(STUDENT))
-                    .wrap(middleware::AuthMiddleware)
-                    .route(web::post().to(class::controller::enroll_student)),
-            )
-            .service(
-                web::resource("/class/teacher/list")
-                    .wrap(middleware::RoleMiddleware(TEACHER))
-                    .wrap(middleware::AuthMiddleware)
-                    .route(web::get().to(class::controller::list_classes_by_teacher)),
             )
             .service(
                 web::scope("/question")
-                    .wrap(middleware::RoleMiddleware(TEACHER))
+                    .wrap(middleware::RoleMiddleware(vec![TEACHER]))
                     .wrap(middleware::AuthMiddleware)
                     .service(
                         web::resource("")
@@ -118,7 +118,8 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::resource("/{question_id}")
                             .get(question::controller::get_question_by_id)
-                            .delete(question::controller::delete_question_by_id),
+                            .delete(question::controller::delete_question_by_id)
+                            .patch(question::controller::update_question_by_id),
                     )
                     .service(
                         web::resource("/{question_id}/answers")
@@ -127,23 +128,51 @@ async fn main() -> std::io::Result<()> {
             )
             .service(
                 web::scope("/exam")
-                    .wrap(middleware::RoleMiddleware(TEACHER))
                     .wrap(middleware::AuthMiddleware)
-                    .service(web::resource("").post(exam::controller::create_exam))
+                    .service(
+                        web::resource("")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .post(exam::controller::create_exam),
+                    )
                     .service(
                         web::resource("/{exam_id}")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
                             .get(exam::controller::get_exam_by_id)
                             .delete(exam::controller::delete_exam)
                             .patch(exam::controller::update_exam),
-                    ), // .service(
-                       //     web::resource("/{exam_id}/questions")
-                       //         .get(exam::controller::list_questions_by_exam_id),
-                       // )
-                       // .service(
-                       //     web::resource("/{exam_id}/questions/{question_id}")
-                       //         .post(exam::controller::add_question_to_exam)
-                       //         .delete(exam::controller::remove_question_from_exam),
-                       // ),
+                    )
+                    .service(
+                        web::resource("/{exam_id}/questions").route(
+                            web::post()
+                                .to(exam::controller::update_questions_in_exam)
+                                .wrap(middleware::RoleMiddleware(vec![TEACHER])),
+                        ),
+                    )
+                    .service(
+                        web::resource("/{exam_id}/questions/student")
+                            .wrap(middleware::RoleMiddleware(vec![STUDENT]))
+                            .get(exam::controller::get_questions_in_exam_as_student),
+                    )
+                    .service(
+                        web::resource("/{exam_id}/questions/teacher")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .get(exam::controller::get_questions_in_exam_as_teacher),
+                    )
+                    .service(
+                        web::resource("/{exam_id}/question/{question_id}/submit")
+                            .wrap(middleware::RoleMiddleware(vec![STUDENT]))
+                            .post(exam::controller::submit_answer_to_question_in_exam),
+                    )
+                    .service(
+                        web::resource("/{exam_id}/results")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .get(exam::controller::get_exam_results_as_teacher),
+                    )
+                    .service(
+                        web::resource("/{exam_id}/results/student")
+                            .wrap(middleware::RoleMiddleware(vec![STUDENT]))
+                            .get(exam::controller::get_exam_results_as_student),
+                    ),
             )
     })
     .bind(("127.0.0.1", 3000))?

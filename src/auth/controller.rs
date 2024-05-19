@@ -1,4 +1,4 @@
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse, Responder};
 
 use crate::auth::{dto::LoginUserInputDto, service};
 

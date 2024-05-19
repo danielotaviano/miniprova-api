@@ -72,6 +72,17 @@ diesel::table! {
 }
 
 diesel::table! {
+    student_answers (id) {
+        id -> Int4,
+        user_id -> Int4,
+        exam_id -> Int4,
+        question_id -> Int4,
+        answer_id -> Int4,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Int4,
         name -> Text,
@@ -96,6 +107,10 @@ diesel::joinable!(classes_students -> users (student_id));
 diesel::joinable!(exam_questions -> exams (exam_id));
 diesel::joinable!(exam_questions -> questions (question_id));
 diesel::joinable!(exams -> classes (class_id));
+diesel::joinable!(student_answers -> answers (answer_id));
+diesel::joinable!(student_answers -> exams (exam_id));
+diesel::joinable!(student_answers -> questions (question_id));
+diesel::joinable!(student_answers -> users (user_id));
 diesel::joinable!(users_roles -> roles (role_name));
 diesel::joinable!(users_roles -> users (user_id));
 
@@ -108,6 +123,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     exams,
     questions,
     roles,
+    student_answers,
     users,
     users_roles,
 );

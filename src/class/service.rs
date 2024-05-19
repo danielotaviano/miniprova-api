@@ -122,3 +122,9 @@ pub fn is_class_teacher(user_id: i32, class_id: i32) -> Result<bool, ServiceErro
 
     Ok(class.unwrap().user_id == user_id)
 }
+
+pub fn is_student_enrolled(class_id: i32, student_id: i32) -> Result<bool, ServiceError> {
+    let is_enrolled = repository::is_student_enrolled(class_id, student_id)?;
+
+    Ok(is_enrolled)
+}

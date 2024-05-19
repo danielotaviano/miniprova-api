@@ -54,3 +54,20 @@ pub async fn list_questions() -> impl Responder {
 
     HttpResponse::Ok().json(questions).into()
 }
+
+pub async fn update_question_by_id(
+    question_id: web::Path<i32>,
+    question: web::Json<CreateQuestionInputDto>,
+) -> impl Responder {
+    match question.validate() {
+        Err(e) => return HttpResponse::from_error(ServiceError::BadRequest(e)),
+        Ok(_) => (),
+    }
+
+    match service::update_question(question_id.into_inner(), question.into_inner()) {
+        Err(e) => return HttpResponse::from_error(e),
+        Ok(question) => question,
+    };
+
+    HttpResponse::Ok().into()
+}

@@ -26,12 +26,17 @@ pub struct CreateAnswerInputDto {
     pub is_correct: bool,
 }
 
-impl CreateAnswerInputDto {
-    pub fn validate(&self) -> Result<(), String> {
-        if self.answer.is_empty() {
-            return Err("Answer is required".to_string());
-        }
+#[derive(Serialize)]
+pub struct QuestionWithAnswersDto {
+    pub id: i32,
+    pub question: String,
+    pub answers: Vec<AnswerDto>,
+}
 
-        Ok(())
-    }
+#[derive(Serialize)]
+pub struct AnswerDto {
+    pub id: i32,
+    pub answer: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_correct: Option<bool>,
 }

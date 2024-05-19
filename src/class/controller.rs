@@ -29,12 +29,13 @@ pub async fn create_class(
 
 pub async fn get_class_by_id(path: web::Path<i32>) -> impl Responder {
     let class_id = path.into_inner();
-    let class = match service::get_class_by_id(class_id) {
+    match service::get_class_by_id(class_id) {
         Err(e) => return HttpResponse::from_error(e),
-        Ok(class) => class,
-    };
-
-    HttpResponse::Ok().json(class).into()
+        Ok(class) => match class {
+            None => HttpResponse::NotFound().into(),
+            Some(class) => HttpResponse::Ok().json(class).into(),
+        },
+    }
 }
 
 pub async fn delete_class(path: web::Path<i32>, req: HttpRequest) -> impl Responder {

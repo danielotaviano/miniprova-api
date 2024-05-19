@@ -1,4 +1,4 @@
-use actix_web::{delete, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 
 use crate::{
     auth::models::LoggedUser,
