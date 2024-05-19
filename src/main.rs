@@ -8,6 +8,7 @@ mod avatar;
 mod class;
 mod db;
 mod errors;
+mod exam;
 mod middleware;
 mod question;
 mod role;
@@ -88,6 +89,12 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
             .service(
+                web::resource("/class/{class_id}/exams")
+                    .wrap(middleware::RoleMiddleware(TEACHER))
+                    .wrap(middleware::AuthMiddleware)
+                    .route(web::get().to(exam::controller::list_exams_by_class_id)),
+            )
+            .service(
                 web::resource("/class/{class_id}/enroll")
                     .wrap(middleware::RoleMiddleware(STUDENT))
                     .wrap(middleware::AuthMiddleware)
@@ -117,6 +124,26 @@ async fn main() -> std::io::Result<()> {
                         web::resource("/{question_id}/answers")
                             .get(question::controller::list_answers_by_question_id),
                     ),
+            )
+            .service(
+                web::scope("/exam")
+                    .wrap(middleware::RoleMiddleware(TEACHER))
+                    .wrap(middleware::AuthMiddleware)
+                    .service(web::resource("").post(exam::controller::create_exam))
+                    .service(
+                        web::resource("/{exam_id}")
+                            .get(exam::controller::get_exam_by_id)
+                            .delete(exam::controller::delete_exam)
+                            .patch(exam::controller::update_exam),
+                    ), // .service(
+                       //     web::resource("/{exam_id}/questions")
+                       //         .get(exam::controller::list_questions_by_exam_id),
+                       // )
+                       // .service(
+                       //     web::resource("/{exam_id}/questions/{question_id}")
+                       //         .post(exam::controller::add_question_to_exam)
+                       //         .delete(exam::controller::remove_question_from_exam),
+                       // ),
             )
     })
     .bind(("127.0.0.1", 3000))?

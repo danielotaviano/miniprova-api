@@ -112,3 +112,13 @@ pub fn list_classes_by_teacher(teacher_id: i32) -> Result<Vec<Class>, ServiceErr
 
     Ok(classes)
 }
+
+pub fn is_class_teacher(user_id: i32, class_id: i32) -> Result<bool, ServiceError> {
+    let class = repository::get_class_by_id(class_id)?;
+
+    if class.is_none() {
+        return Err(ServiceError::BadRequest("Class not found".to_string()));
+    }
+
+    Ok(class.unwrap().user_id == user_id)
+}

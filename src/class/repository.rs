@@ -123,3 +123,16 @@ pub fn list_classes_by_teacher(tid: i32) -> Result<Vec<Class>, ServiceError> {
 
     Ok(ccs)
 }
+
+pub fn is_class_teacher(cid: i32, tid: i32) -> Result<bool, ServiceError> {
+    let mut conn = DB_MANAGER.lock().unwrap().get_database();
+    let is_teacher = classes
+        .filter(id.eq(cid))
+        .filter(user_id.eq(tid))
+        .select(user_id)
+        .first::<i32>(&mut conn)
+        .optional()
+        .map_err(|_| ServiceError::InternalServerError)?;
+
+    Ok(is_teacher.is_some())
+}
