@@ -92,10 +92,16 @@ pub async fn update_questions_in_exam(
     }
 }
 
-pub async fn get_questions_in_exam_as_student(path: web::Path<i32>) -> impl Responder {
+pub async fn get_questions_in_exam_as_student(
+    req: HttpRequest,
+    path: web::Path<i32>,
+) -> impl Responder {
     let exam_id = path.into_inner();
 
-    let questions = match service::get_questions_in_exam_as_student(exam_id) {
+    let ext = req.extensions();
+    let user = ext.get::<LoggedUser>().unwrap();
+
+    let questions = match service::get_questions_in_exam_as_student(user.id, exam_id) {
         Err(e) => return HttpResponse::from_error(e),
         Ok(questions) => questions,
     };

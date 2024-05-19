@@ -160,6 +160,7 @@ pub fn update_questions_in_exam(
 }
 
 pub fn get_questions_in_exam_as_student(
+    student_id: i32,
     exam_id: i32,
 ) -> Result<Vec<question::dto::QuestionWithAnswersDto>, ServiceError> {
     let exam = repository::get_exam_by_id(exam_id)?;
@@ -169,6 +170,12 @@ pub fn get_questions_in_exam_as_student(
     }
 
     let exam = exam.unwrap();
+
+    let is_student = class::service::is_student_enrolled(exam.class_id, student_id)?;
+
+    if !is_student {
+        return Err(ServiceError::Forbidden);
+    }
 
     if exam.start_date > chrono::Utc::now().naive_utc() {
         return Err(ServiceError::BadRequest("Exam not started yet".to_string()));

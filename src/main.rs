@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(Logger::new("%a %{User-Agent}i"))
             .service(
-                web::scope("/user")
+                web::scope("/users")
                     .service(web::resource("").post(user::controller::create_user))
                     .service(
                         web::resource("/{user_id}/roles")
@@ -39,7 +39,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
             .service(
-                web::scope("/avatar")
+                web::scope("/avatars")
                     .wrap(middleware::AuthMiddleware)
                     .service(
                         web::resource("")
@@ -47,9 +47,9 @@ async fn main() -> std::io::Result<()> {
                             .delete(avatar::controller::delete_user_avatar),
                     ),
             )
-            .service(web::resource("/login").post(auth::controller::login))
+            .service(web::resource("/auth/login").post(auth::controller::login))
             .service(
-                web::scope("/class")
+                web::scope("/classes")
                     .wrap(middleware::AuthMiddleware)
                     .service(
                         web::resource("")
@@ -57,7 +57,7 @@ async fn main() -> std::io::Result<()> {
                             .post(class::controller::create_class),
                     )
                     .service(
-                        web::resource("/student/enrolled")
+                        web::resource("/students/enrolled")
                             .wrap(middleware::RoleMiddleware(vec![STUDENT]))
                             .route(
                                 web::get()
@@ -65,13 +65,18 @@ async fn main() -> std::io::Result<()> {
                             ),
                     )
                     .service(
-                        web::resource("/student/unenrolled")
+                        web::resource("/students/unenrolled")
                             .wrap(middleware::RoleMiddleware(vec![STUDENT]))
                             .route(
                                 web::get().to(
                                     class::controller::list_classes_that_student_is_not_enrolled,
                                 ),
                             ),
+                    )
+                    .service(
+                        web::resource("/teachers")
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .route(web::get().to(class::controller::list_classes_by_teacher)),
                     )
                     .service(
                         web::resource("/{class_id}")
@@ -99,15 +104,10 @@ async fn main() -> std::io::Result<()> {
                         web::resource("/{class_id}/enroll")
                             .wrap(middleware::RoleMiddleware(vec![STUDENT]))
                             .route(web::post().to(class::controller::enroll_student)),
-                    )
-                    .service(
-                        web::resource("/teacher/list")
-                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
-                            .route(web::get().to(class::controller::list_classes_by_teacher)),
                     ),
             )
             .service(
-                web::scope("/question")
+                web::scope("/questions")
                     .wrap(middleware::RoleMiddleware(vec![TEACHER]))
                     .wrap(middleware::AuthMiddleware)
                     .service(
@@ -127,7 +127,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
             .service(
-                web::scope("/exam")
+                web::scope("/exams")
                     .wrap(middleware::AuthMiddleware)
                     .service(
                         web::resource("")
@@ -149,12 +149,12 @@ async fn main() -> std::io::Result<()> {
                         ),
                     )
                     .service(
-                        web::resource("/{exam_id}/questions/student")
+                        web::resource("/{exam_id}/questions/students")
                             .wrap(middleware::RoleMiddleware(vec![STUDENT]))
                             .get(exam::controller::get_questions_in_exam_as_student),
                     )
                     .service(
-                        web::resource("/{exam_id}/questions/teacher")
+                        web::resource("/{exam_id}/questions/teachers")
                             .wrap(middleware::RoleMiddleware(vec![TEACHER]))
                             .get(exam::controller::get_questions_in_exam_as_teacher),
                     )
@@ -169,7 +169,7 @@ async fn main() -> std::io::Result<()> {
                             .get(exam::controller::get_exam_results_as_teacher),
                     )
                     .service(
-                        web::resource("/{exam_id}/results/student")
+                        web::resource("/{exam_id}/results/students")
                             .wrap(middleware::RoleMiddleware(vec![STUDENT]))
                             .get(exam::controller::get_exam_results_as_student),
                     ),

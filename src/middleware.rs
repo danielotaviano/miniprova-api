@@ -162,7 +162,7 @@ where
                 .roles
                 .iter()
                 .any(|role| self.role.contains(role))
-                || self.role.contains(&RoleEnum::ADMIN);
+                || logged_user.roles.contains(&RoleEnum::ADMIN);
         }
 
         let fut: <S as Service<ServiceRequest>>::Future = match has_role {
