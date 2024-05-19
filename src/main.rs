@@ -155,7 +155,7 @@ async fn main() -> std::io::Result<()> {
                     )
                     .service(
                         web::resource("/{exam_id}/questions/teachers")
-                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER, MONITOR]))
                             .get(exam::controller::get_questions_in_exam_as_teacher),
                     )
                     .service(
@@ -165,7 +165,7 @@ async fn main() -> std::io::Result<()> {
                     )
                     .service(
                         web::resource("/{exam_id}/results")
-                            .wrap(middleware::RoleMiddleware(vec![TEACHER]))
+                            .wrap(middleware::RoleMiddleware(vec![TEACHER, MONITOR]))
                             .get(exam::controller::get_exam_results_as_teacher),
                     )
                     .service(
