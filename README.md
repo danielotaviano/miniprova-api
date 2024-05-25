@@ -1,1 +1,2 @@
-# miniprova-api
+1. Execução
+Para execução do projeto, é necessário ter o docker e docker-compose instalados. Após isso, basta executar o comando docker-compose up na raiz do projeto para subir o banco de dados postgres. Obs: Necessita ser criado um arquivo .env na raiz do projeto seguindo o modelo do arquivo .env.example. Ao ter um serviço postgres rodando, basta executar o comando cargo run na raiz do projeto para subir o servidor.
